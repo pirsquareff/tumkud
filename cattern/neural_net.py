@@ -78,13 +78,11 @@ class TwoLayerNet(object):
     # HINT: This is just a series of matrix multiplication.                     #
     #############################################################################
     
-    # 1st layer
-    # ReLu((W1.T)X + b1)
+    # 1st layer + activation fn -> ReLu((W1.T)X + b1)
     layer_1 = np.maximum(X.dot(W1) + b1)
 
     # 2nd layer
-    layer_2 = layer_1.dot(W2) + b2
-    scores = layer_2
+    scores = layer_1.dot(W2) + b2
     
     #############################################################################
     #                              END OF TODO#1                                #
@@ -102,6 +100,24 @@ class TwoLayerNet(object):
     # in the variable loss, which should be a scalar. Use the Softmax           #
     # classifier loss.                                                          #
     #############################################################################
+    
+    # exp_scores = np.exp(scores)
+    # a2 = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
+    # correct_log_probs = -np.log(a2[range(N), y])
+    # data_loss = np.sum(correct_log_probs) / N+
+    # reg_loss = 0.5 * reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
+    # loss = data_loss + reg_loss
+    
+    # Softmax probability
+    e_scores = np.exp(scores)
+    softmax_layer = e_scores / np.sum(e_scores, axis = 1, keepdims = True)
+    
+    # Select only correct class
+    data_loss = np.sum(-np.log(softmax_layer[range(N), y])) / N
+    l2_reg = 0.5 * reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
+    
+    # Regularized loss
+    loss = data_loss + l2_reg
     
     #############################################################################
     #                              END OF TODO#2                                #
