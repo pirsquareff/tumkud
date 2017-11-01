@@ -80,7 +80,7 @@ class TwoLayerNet(object):
     
     # 1st layer + activation fn -> ReLu((W_1.T)X + b_1)
     z1 = X.dot(W1) + b1
-    h1 = np.maximum(z1)
+    h1 = np.maximum(0, z1)
 
     # 2nd layer
     z2 = h1.dot(W2) + b2
@@ -129,7 +129,7 @@ class TwoLayerNet(object):
 
     # dL/dh_2 = P(y=2) - y_2
     dL_dh2 = prob
-    dL_dh2[range[N], y] -= 1
+    dL_dh2[range(N), y] -= 1
     dL_dh2 /= N
 
     # dL/dW_2 = (dL/dh_2)(dh_2/dW_2) + d(0.5CW_1^2 + 0.5CW_2^2)/dW_2
