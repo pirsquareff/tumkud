@@ -78,11 +78,13 @@ class TwoLayerNet(object):
     # HINT: This is just a series of matrix multiplication.                     #
     #############################################################################
     
-    # 1st layer + activation fn -> ReLu((W1.T)X + b1)
-    layer_1 = np.maximum(X.dot(W1) + b1)
+    # 1st layer + activation fn -> ReLu((W_1.T)X + b_1)
+    z1 = X.dot(W1) + b1
+    h1 = np.maximum(z1)
 
     # 2nd layer
-    scores = layer_1.dot(W2) + b2
+    z2 = h1.dot(W2) + b2
+    scores = z2
     
     #############################################################################
     #                              END OF TODO#1                                #
@@ -101,19 +103,12 @@ class TwoLayerNet(object):
     # classifier loss.                                                          #
     #############################################################################
     
-    # exp_scores = np.exp(scores)
-    # a2 = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
-    # correct_log_probs = -np.log(a2[range(N), y])
-    # data_loss = np.sum(correct_log_probs) / N+
-    # reg_loss = 0.5 * reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
-    # loss = data_loss + reg_loss
-    
     # Softmax probability
     e_scores = np.exp(scores)
-    softmax_layer = e_scores / np.sum(e_scores, axis = 1, keepdims = True)
+    prob = e_scores / np.sum(e_scores, axis = 1, keepdims = True)
     
     # Select only correct class
-    data_loss = np.sum(-np.log(softmax_layer[range(N), y])) / N
+    data_loss = np.sum(-np.log(prob[range(N), y])) / N
     l2_reg = 0.5 * reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
     
     # Regularized loss
@@ -132,6 +127,35 @@ class TwoLayerNet(object):
     # don't forget about the regularization term                                #
     #############################################################################
 
+    # dL/dh_2 = P(y=2) - y_2
+    dL_dh2 = prob
+    dL_dh2[range[N], y] -= 1
+    dL_dh2 /= N
+
+    # dL/dW_2 = (dL/dh_2)(dh_2/dW_2) + d(0.5CW_1^2 + 0.5CW_2^2)/dW_2
+    #         = (dL/dh_2)(d(W_2h1 + b_2)/dW_2) + CW_2
+    grads['W2'] = np.dot(h1.T, dL_dh2)
+    grads['W2'] += reg * W2
+
+    # dL/db_2 = (dL/dh_2)(dh_2/db_2)
+    #         = dL/dh_2
+    grads['b2'] = np.sum(dL_dh2, axis=0)
+    
+    # dL/dh_1 = (dL/dh_2)(dh_2/dh_1)
+    #         = (dL/dh_2)(d(W_2h1 + b_2)/dh_1)
+    dhidden = np.dot(dL_dh2, W2.T)
+    # Back propagation through ReLU fn
+    dhidden[h1 <= 0] = 0
+    
+    # dL/dW_1 = (dL/dh_2)(dh_2/dh_1)(dh_1/dW_1) + d(0.5CW_1^2 + 0.5CW_2^2)/dW_1
+    #         = (dL/dh_2)(d(W_2h1 + b_2)/dh_1)(d(W_1X + b1)/dW_1) + CW_1
+    grads['W1'] = np.dot(X.T, dhidden)
+    grads['W1'] += reg * W1
+    
+    # dL/db1 = (dL/dh_2)(dh_2/dh_1)(dh_1/db_1)
+    #        = (dL/dh_2)(dh_2/dh_1)
+    grads['b1'] = np.sum(dhidden, axis=0)
+    
     #############################################################################
     #                              END OF TODO#3                                #
     #############################################################################
