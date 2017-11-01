@@ -78,6 +78,14 @@ class TwoLayerNet(object):
     # HINT: This is just a series of matrix multiplication.                     #
     #############################################################################
     
+    # 1st layer
+    # ReLu((W1.T)X + b1)
+    layer_1 = np.maximum(X.dot(W1) + b1)
+
+    # 2nd layer
+    layer_2 = layer_1.dot(W2) + b2
+    scores = layer_2
+    
     #############################################################################
     #                              END OF TODO#1                                #
     #############################################################################
